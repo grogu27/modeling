@@ -1,0 +1,18 @@
+# Установка python3-venv если ещё не установлен
+sudo apt update
+sudo apt install python3-venv python3-full
+
+# Создание виртуального окружения в папке проекта
+python3 -m venv venv
+
+# Активация виртуального окружения
+source venv/bin/activate
+
+# Теперь pip работает нормально
+pip install numpy matplotlib
+
+# Запуск программы
+python3 main.py
+
+# Когда закончите, можно выйти из виртуального окружения
+deactivate
