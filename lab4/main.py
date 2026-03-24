@@ -1,164 +1,255 @@
+"""
+Лабораторная работа: Матрицы выборок
+- С возвращением: m раз выбираем один из n элементов (повторы возможны)
+- Без возвращения: выбираем m различных элементов из n (m ≤ n)
+- Размещение m = n: перестановка всех n элементов
+- Матрица накопления: результаты нескольких проходов (абсолютные частоты)
+Матрица m×n: строка i — i-й выбор, столбец j — элемент j; 1 если выбран
+"""
 import numpy as np
 import random
 
-def generate_matrices():
-    """
-    Генерирует две матрицы для выборок с возвращением и без возвращения
-    """
-    # 1) Генерируем случайные числа m и n в диапазоне от 3 до 10
-    n = random.randint(3, 10)  # размер исходного множества
-    m = random.randint(3, n)   # количество выбираемых элементов (m ≤ n)
-    
-    print(f"Исходные параметры:")
-    print(f"n = {n} (размер исходного множества, элементы 1...{n})")
-    print(f"m = {m} (количество выбираемых элементов)")
-    print()
-    
-    # Создаем исходное множество элементов
-    elements = list(range(1, n + 1))
-    print(f"Исходное множество: {elements}")
-    print()
-    
-    # 2) Создаем матрицы m×n, заполненные нулями
-    matrix_with_return = np.zeros((m, n), dtype=int)
-    matrix_without_return = np.zeros((m, n), dtype=int)
-    
-    # 3) Генерируем выборки и заполняем матрицы
-    
-    # Выборка с возвращением
-    print("ВЫБОРКА С ВОЗВРАЩЕНИЕМ:")
-    print("На каждом шаге выбираем элемент, после чего возвращаем его обратно")
-    print("(элементы могут повторяться в разных шагах)")
-    
-    sample_with_return = []
-    for i in range(m):
-        # Выбираем случайный элемент из всего множества
-        chosen_element = random.choice(elements)
-        sample_with_return.append(chosen_element)
-        
-        # В i-й строке ставим 1 в столбце выбранного элемента
-        # Индексы в Python начинаются с 0, поэтому вычитаем 1
-        matrix_with_return[i, chosen_element - 1] = 1
-        
-        print(f"Шаг {i+1}: выбран элемент {chosen_element}")
-    
-    print(f"\nПолученная выборка: {sample_with_return}")
-    print("\nМатрица для выборки с возвращением (m×n):")
-    print("Строка i - i-й выбор, столбец j - элемент j")
-    print("1 означает, что на этом шаге выбран данный элемент")
-    print(matrix_with_return)
-    print()
-    
-    # Выборка без возвращения
-    print("ВЫБОРКА БЕЗ ВОЗВРАЩЕНИЯ:")
-    print("На каждом шаге выбираем элемент и удаляем его из множества")
-    print("(все выбранные элементы различны)")
-    
-    # Создаем копию множества для выборки без возвращения
-    available_elements = elements.copy()
-    sample_without_return = []
-    
-    for i in range(m):
-        # Выбираем случайный элемент из доступных
-        chosen_element = random.choice(available_elements)
-        sample_without_return.append(chosen_element)
-        available_elements.remove(chosen_element)
-        
-        # В i-й строке ставим 1 в столбце выбранного элемента
-        matrix_without_return[i, chosen_element - 1] = 1
-        
-        print(f"Шаг {i+1}: выбран элемент {chosen_element}")
-        print(f"  Остались доступными: {available_elements}")
-    
-    print(f"\nПолученная выборка: {sample_without_return}")
-    print("\nМатрица для выборки без возвращения (m×n):")
-    print("Строка i - i-й выбор, столбец j - элемент j")
-    print("1 означает, что на этом шаге выбран данный элемент")
-    print(matrix_without_return)
-    print()
-    
-    # Особый случай: если m = n, это перестановка
-    if m == n:
-        print("⚠️ При m = n получается перестановка всех элементов!")
-        print(f"Перестановка: {sample_without_return}")
-    
-    return matrix_with_return, matrix_without_return, n, m
+SEED = 42
 
-def explain_difference():
-    """
-    Объясняет разницу между выборками с возвращением и без
-    """
-    print("\n" + "="*60)
-    print("ОБЪЯСНЕНИЕ РАЗЛИЧИЙ МЕЖДУ ВЫБОРКАМИ")
-    print("="*60)
-    
-    print("\n1. Выборка С ВОЗВРАЩЕНИЕМ:")
-    print("   • После каждого выбора элемент возвращается обратно в множество")
-    print("   • На каждом шаге все элементы доступны для выбора")
-    print("   • Элементы могут повторяться в выборке")
-    print("   • Количество возможных выборок: n^m")
-    print("   • В матрице: в каждом столбце может быть несколько единиц")
-    
-    print("\n2. Выборка БЕЗ ВОЗВРАЩЕНИЯ:")
-    print("   • Выбранный элемент удаляется из множества")
-    print("   • Каждый элемент может быть выбран не более одного раза")
-    print("   • Все элементы в выборке различны")
-    print("   • Количество возможных выборок: n!/(n-m)!")
-    print("   • В матрице: в каждом столбце не более одной единицы")
-    print("   • Если m = n, получаем перестановку из n элементов")
 
-def visualize_matrices(matrix_with_return, matrix_without_return, n, m):
-    """
-    Визуализирует матрицы для наглядности
-    """
-    print("\n" + "="*60)
-    print("ВИЗУАЛИЗАЦИЯ МАТРИЦ")
-    print("="*60)
-    
-    print(f"\nМатрица {m}×{n} для выборки С ВОЗВРАЩЕНИЕМ:")
-    print("    " + "  ".join([f"j={j+1}" for j in range(n)]))
-    for i in range(m):
-        row_str = f"i={i+1}: "
-        for j in range(n):
-            if matrix_with_return[i, j] == 1:
-                row_str += " [1]"
-            else:
-                row_str += "  0"
-        print(row_str)
-    
-    print(f"\nМатрица {m}×{n} для выборки БЕЗ ВОЗВРАЩЕНИЯ:")
-    print("    " + "  ".join([f"j={j+1}" for j in range(n)]))
-    for i in range(m):
-        row_str = f"i={i+1}: "
-        for j in range(n):
-            if matrix_without_return[i, j] == 1:
-                row_str += " [1]"
-            else:
-                row_str += "  0"
-        print(row_str)
+def generate_params():
+    """Генерирует случайные параметры n и m (3 ≤ m ≤ n ≤ 10)"""
+    n = random.randint(3, 10)
+    m = random.randint(3, n)
+    return n, m
 
-# Запуск программы
-if __name__ == "__main__":
-    # Устанавливаем seed для воспроизводимости (можно убрать для случайности)
-    random.seed(42)
+
+def with_replacement(n, m, rng):
+    """
+    Выборка с возвращением.
+    Возвращает матрицу m×n и список выбранных элементов.
+    """
+    mat = np.zeros((m, n), dtype=int)
+    sample = []
+    for i in range(m):
+        j = rng.integers(0, n)  # выбираем индекс элемента
+        mat[i, j] = 1
+        sample.append(j + 1)  # элемент (1..n)
+    return mat, sample
+
+
+def without_replacement(n, m, rng):
+    """
+    Выборка без возвращения.
+    Возвращает матрицу m×n и список выбранных элементов.
+    """
+    perm = rng.permutation(n)[:m]  # случайная перестановка, берем первые m
+    mat = np.zeros((m, n), dtype=int)
+    sample = []
+    for i, j in enumerate(perm):
+        mat[i, j] = 1
+        sample.append(j + 1)  # элемент (1..n)
+    return mat, sample
+
+
+def placement_m_n(n, rng):
+    """
+    Размещение m = n (перестановка всех элементов).
+    Возвращает матрицу n×n и список выбранных элементов.
+    """
+    return without_replacement(n, n, rng)
+
+
+def accumulation_matrix(n, m, num_passes, rng, with_replacement_flag=True):
+    """
+    Создает матрицу накопления для нескольких проходов.
+    Возвращает матрицу накопления (абсолютные частоты).
+    """
+    accumulation_mat = np.zeros((m, n), dtype=int)
     
-    print("="*60)
+    for _ in range(num_passes):
+        if with_replacement_flag:
+            for i in range(m):
+                j = rng.integers(0, n)
+                accumulation_mat[i, j] += 1
+        else:
+            perm = rng.permutation(n)[:m]
+            for i, j in enumerate(perm):
+                accumulation_mat[i, j] += 1
+    
+    return accumulation_mat
+
+
+def print_table(title, n, m, mat, sample):
+    """
+    Красиво печатает матрицу с подписями строк и столбцов,
+    а также массив 0-1 и саму выборку.
+    """
+    print(title)
+    print(f"n = {n}, m = {m}")
+    rows, cols = mat.shape
+    
+    # Заголовок с номерами столбцов (элементы 1..n)
+    header = "    " + " ".join(f"{j+1:>3}" for j in range(cols))
+    print(header)
+    print("    " + "-" * (4 * cols))
+    
+    # Строки с номерами шагов выбора
+    for i in range(rows):
+        print(f"{i+1:>3}|" + " ".join(f"{mat[i, j]:>3}" for j in range(cols)))
+    
+    # Вывод выборки (последовательность выбранных элементов)
+    print(f"\nВыборка (последовательность элементов): {sample}")
+    
+    # Вывод матрицы в формате 0-1
+    print(f"\nМатрица в формате 0-1 (m={m}, n={n}):")
+    print(mat.tolist())
+    print()
+
+
+def print_accumulation_table(title, n, m, acc_mat, num_passes):
+    """
+    Печатает матрицу накопления.
+    """
+    print(title)
+    print(f"n = {n}, m = {m}, количество проходов = {num_passes}")
+    
+    print("\nМАТРИЦА НАКОПЛЕНИЯ (абсолютные частоты):")
+    rows, cols = acc_mat.shape
+    header = "    " + " ".join(f"{j+1:>4}" for j in range(cols))
+    print(header)
+    print("    " + "-" * (5 * cols))
+    for i in range(rows):
+        print(f"{i+1:>3}|" + " ".join(f"{acc_mat[i, j]:>4}" for j in range(cols)))
+    
+    # Вывод матрицы накопления в формате списка
+    print(f"\nМатрица абсолютных частот (m={m}, n={n}):")
+    print(acc_mat.tolist())
+    print()
+
+def demonstrate_accumulation(rng):
+    """
+    Демонстрирует работу с матрицей накопления
+    """
+    print("\n" + "="*70)
+    print("МАТРИЦЫ НАКОПЛЕНИЯ (МНОГОКРАТНЫЕ ПРОХОДЫ)")
+    print("="*70)
+    
+    # Параметры для демонстрации
+    n, m = 5, 3
+    num_passes_list = [10, 100, 1000]
+    
+    print(f"\nДемонстрация для n={n}, m={m}")
+    print("Сравнение для разного количества проходов:\n")
+    
+    for with_replacement_flag in [True, False]:
+        choice_type = "С ВОЗВРАЩЕНИЕМ" if with_replacement_flag else "БЕЗ ВОЗВРАЩЕНИЯ"
+        print(f"\n--- ВЫБОРКА {choice_type} ---")
+        
+        for num_passes in num_passes_list:
+            accumulation_mat = accumulation_matrix(
+                n, m, num_passes, rng, with_replacement_flag
+            )
+            
+            print_accumulation_table(
+                f"\nРезультаты для {num_passes} проходов:",
+                n, m, accumulation_mat, num_passes
+            )
+
+
+def main():
+    # Используем современный генератор случайных чисел numpy
+    rng = np.random.default_rng(SEED)
+    
+    print("="*70)
     print("ЛАБОРАТОРНАЯ РАБОТА: МАТРИЦЫ ВЫБОРОК")
-    print("="*60)
+    print("="*70)
     
-    # Генерируем матрицы
-    matrix_with_return, matrix_without_return, n, m = generate_matrices()
+    # 1) Демонстрация с фиксированными параметрами
+    print("\n" + "="*70)
+    print("ДЕМОНСТРАЦИЯ С ФИКСИРОВАННЫМИ ПАРАМЕТРАМИ")
+    print("="*70)
     
-    # Визуализируем матрицы
-    visualize_matrices(matrix_with_return, matrix_without_return, n, m)
+    # Выборки с возвращением
+    with_replacement_params = [(5, 4), (7, 5), (8, 6), (6, 4)]
+    print("\n--- ВЫБОРКИ С ВОЗВРАЩЕНИЕМ ---")
+    for n, m in with_replacement_params:
+        mat, sample = with_replacement(n, m, rng)
+        print_table(f"С возвращением: n={n}, m={m}", n, m, mat, sample)
     
-    # Объясняем разницу
-    #explain_difference()
+    # Выборки без возвращения
+    without_replacement_params = [(6, 4), (8, 5), (7, 4), (5, 3)]
+    print("\n--- ВЫБОРКИ БЕЗ ВОЗВРАЩЕНИЯ ---")
+    for n, m in without_replacement_params:
+        mat, sample = without_replacement(n, m, rng)
+        print_table(f"Без возвращения: n={n}, m={m}", n, m, mat, sample)
     
-    print("\n" + "="*60)
-    print("ВЫВОДЫ:")
-    print("="*60)
-    print(f"• Для заданных параметров n={n}, m={m} мы получили две матрицы размером {m}×{n}")
-    print("• Матрица с возвращением может иметь несколько единиц в одном столбце")
-    print("• Матрица без возвращения имеет не более одной единицы в каждом столбце")
-    print("• Это отражает основное различие: возможность повторения элементов")
+    # Размещения m = n
+    placement_params = [5, 7, 8, 4]
+    print("\n--- РАЗМЕЩЕНИЯ m = n (ПЕРЕСТАНОВКИ) ---")
+    for n in placement_params:
+        mat, sample = placement_m_n(n, rng)
+        print_table(f"Размещение m=n: n={n}", n, n, mat, sample)
+    
+    # 2) Демонстрация со случайными параметрами
+    print("\n" + "="*70)
+    print("ДЕМОНСТРАЦИЯ СО СЛУЧАЙНЫМИ ПАРАМЕТРАМИ")
+    print("="*70)
+    
+    # Генерируем случайные параметры 3 раза
+    for trial in range(1, 4):
+        print(f"\n--- СЛУЧАЙНЫЙ ТЕСТ #{trial} ---")
+        n, m = generate_params()
+        print(f"Сгенерированы параметры: n={n}, m={m}")
+        
+        # С возвращением
+        mat_with, sample_with = with_replacement(n, m, rng)
+        print_table("С возвращением:", n, m, mat_with, sample_with)
+        
+        # Без возвращения
+        mat_without, sample_without = without_replacement(n, m, rng)
+        print_table("Без возвращения:", n, m, mat_without, sample_without)
+        
+        # Если m == n, показываем как размещение
+        if m == n:
+            print("⚠️ В этом случае m = n, выборка без возвращения является перестановкой!")
+    
+    # 3) Демонстрация матриц накопления
+    demonstrate_accumulation(rng)
+    
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+# def print_explanation():
+#     """Выводит объяснение различий между типами выборок"""
+#     print("\n" + "="*70)
+#     print("ОБЪЯСНЕНИЕ РАЗЛИЧИЙ МЕЖДУ ТИПАМИ ВЫБОРОК")
+#     print("="*70)
+#     
+#     print("\n1. ВЫБОРКА С ВОЗВРАЩЕНИЕМ:")
+#     print("   • Элемент после выбора возвращается обратно в множество")
+#     print("   • На каждом шаге доступны все n элементов")
+#     print("   • Элементы могут повторяться в выборке")
+#     print("   • Количество возможных выборок: n^m")
+#     print("   • В матрице: в каждом столбце может быть несколько единиц")
+#     print("   • Математическое ожидание частоты для каждой ячейки: 1/n")
+#     
+#     print("\n2. ВЫБОРКА БЕЗ ВОЗВРАЩЕНИЯ:")
+#     print("   • Выбранный элемент удаляется из множества")
+#     print("   • Каждый элемент может быть выбран не более одного раза")
+#     print("   • Все элементы в выборке различны")
+#     print("   • Количество возможных выборок: n!/(n-m)!")
+#     print("   • В матрице: в каждом столбце не более одной единицы")
+#     print("   • Математическое ожидание: для i-го шага вероятность = 1/(n-i+1)")
+#     
+#     print("\n3. РАЗМЕЩЕНИЕ (m = n):")
+#     print("   • Частный случай выборки без возвращения")
+#     print("   • Выбираются все n элементов в некотором порядке")
+#     print("   • Получается перестановка из n элементов")
+#     print("   • Количество возможных перестановок: n!")
+#     print("   • В матрице: ровно одна единица в каждой строке и каждом столбце")
+#     
+#     print("\n4. МАТРИЦА НАКОПЛЕНИЯ:")
+#     print("   • Результат нескольких проходов (экспериментов)")
+#     print("   • Абсолютные частоты показывают, сколько раз элемент был выбран")
+#     print("   • Относительные частоты приближаются к теоретическим вероятностям")
+#     print("   • При увеличении числа проходов частоты стремятся к вероятностям")
