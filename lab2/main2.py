@@ -74,30 +74,54 @@ def calculate_network_parameters(works):
                   f"IH = {work['io']} - {work['duration']} = {work['iih']}")
     
     # Распространяем поздние сроки обратно
+    # changed = True
+    # while changed:
+    #     changed = False
+    #     for work in works:
+    #         if followers[work['code']] and work['io'] == 0:
+    #             min_iih = float('inf')
+    #             all_followers_found = True
+                
+    #             for fol_code in followers[work['code']]:
+    #                 fol = works_dict.get(fol_code)
+    #                 if fol and fol['iih'] > 0:
+    #                     min_iih = min(min_iih, fol['iih'])
+    #                 elif fol:
+    #                     all_followers_found = False
+    #                     break
+                
+    #             if all_followers_found and min_iih != float('inf'):
+    #                 work['io'] = min_iih
+    #                 work['iih'] = work['io'] - work['duration']
+    #                 print(f"{work['code']}: IO = min({', '.join(followers[work['code']])}) = {work['io']}, "
+    #                       f"IH = {work['io']} - {work['duration']} = {work['iih']}")
+    #                 changed = True
+    # Распространяем поздние сроки обратно
     changed = True
     while changed:
         changed = False
         for work in works:
-            if followers[work['code']] and work['io'] == 0:
+            if followers[work['code']]:  # у работы есть последователи
                 min_iih = float('inf')
                 all_followers_found = True
-                
                 for fol_code in followers[work['code']]:
                     fol = works_dict.get(fol_code)
-                    if fol and fol['iih'] > 0:
+                    if fol and fol['iih'] > 0:  # у последователя уже есть IH
                         min_iih = min(min_iih, fol['iih'])
                     elif fol:
                         all_followers_found = False
                         break
-                
                 if all_followers_found and min_iih != float('inf'):
-                    work['io'] = min_iih
-                    work['iih'] = work['io'] - work['duration']
-                    print(f"{work['code']}: IO = min({', '.join(followers[work['code']])}) = {work['io']}, "
-                          f"IH = {work['io']} - {work['duration']} = {work['iih']}")
-                    changed = True
-    
-    print("\nРАСЧЁТ РЕЗЕРВОВ:")
+                    # ВАЖНО: пересчитываем, даже если уже было значение
+                    new_io = min_iih
+                    new_iih = new_io - work['duration']
+                    # Если значение изменилось, обновляем и помечаем changed
+                    if new_io != work['io']:
+                        work['io'] = new_io
+                        work['iih'] = new_iih
+                        changed = True
+                        print(f"{work['code']}: IO = min({', '.join(followers[work['code']])}) = {work['io']}, IH = {work['iih']}")
+        print("\nРАСЧЁТ РЕЗЕРВОВ:")
     
     for work in works:
         # Полный резерв

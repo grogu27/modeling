@@ -38,18 +38,9 @@ def F_inv(y):
         return -0.2
     elif y <= F1:
         # Первый участок: (a/4)*(x+0.2)^4 = y
-        # (x+0.2)^4 = 4y/a = 4y/(625/1134) = (4536/625)*y
         return ((4536 / 625) * y)**(1/4) - 0.2
     elif y <= 1.0:
         # Второй участок: (2/63)*(-10x^2 + 50x - 31) = y
-        # -10x^2 + 50x - 31 = (63/2)*y
-        # -10x^2 + 50x - 31 - (63/2)*y = 0
-        # Умножаем на -1: 10x^2 - 50x + 31 + (63/2)*y = 0
-        # Решаем квадратное уравнение: 10x^2 - 50x + (31 + 31.5*y) = 0
-        # Дискриминант: D = 2500 - 40*(31 + 31.5*y) = 2500 - 1240 - 1260*y = 1260 - 1260*y = 1260*(1-y)
-        # x = (50 - sqrt(1260*(1-y))) / 20 = (50 - sqrt(1260)*sqrt(1-y)) / 20
-        # sqrt(1260) = sqrt(36*35) = 6*sqrt(35)
-        # x = (50 - 6*sqrt(35)*sqrt(1-y)) / 20 = (25 - 3*sqrt(35*(1-y))) / 10
         return (25 - 3 * math.sqrt(35 * (1 - y))) / 10
     else:
         return 2.5
@@ -90,21 +81,20 @@ n_samples = 20000
 samples = generate_samples(n_samples)
 print(f"Сгенерировано {n_samples} значений")
 
-# --- Создание отдельных графиков с точками без фона ---
 
-# 1. График плотности вероятности с облаком точек (только точки, без фона)
+# 1. График плотности вероятности
 plt.figure(figsize=(10, 8))
 x_vals = linspace(-0.5, 3.0, 500)
 y_vals = f_pdf_vec(x_vals)
 plt.plot(x_vals, y_vals, 'b-', linewidth=2, label='Теоретическая f(x)')
 
-# Только точки, без заливки фона
+# Только точки
 n_scatter = min(3000, len(samples))
 scatter_indices = random.sample(range(len(samples)), n_scatter)
 scatter_x = [samples[i] for i in scatter_indices]
 scatter_y = [random.uniform(0, f_pdf(x)) for x in scatter_x]
 plt.scatter(scatter_x, scatter_y, color='darkblue', s=0.5, alpha=0.3, 
-            label='Точки датчика (облако)', rasterized=True)
+            label='Точки датчика', rasterized=True)
 
 plt.axvline(x=1.0, color='gray', linestyle='--', alpha=0.7, label='x=1')
 plt.axvline(x=2.5, color='gray', linestyle='--', alpha=0.7, label='x=2.5')
@@ -120,7 +110,7 @@ plt.savefig('plot_pdf_with_cloud.png', dpi=300, bbox_inches='tight',
 plt.close()
 print("Сохранен файл: plot_pdf_with_cloud.png")
 
-# 2. График функции распределения с эмпирической CDF
+# 2. График функции распределения
 plt.figure(figsize=(10, 8))
 x_vals = linspace(-0.5, 3.0, 500)
 y_vals = F_cdf_vec(x_vals)
@@ -164,9 +154,8 @@ plt.savefig('plot_inv.png', dpi=300, bbox_inches='tight',
 plt.close()
 print("Сохранен файл: plot_inv.png")
 
-# 4. Гистограмма выборки (ИСПРАВЛЕНО - теперь пик на месте)
+# 4. Гистограмма выборки
 plt.figure(figsize=(10, 8))
-# Увеличим количество бинов для лучшего отображения формы
 plt.hist(samples, bins=80, density=True, alpha=0.7, color='skyblue', 
          edgecolor='black', linewidth=0.5, label='Выборка (n={})'.format(n_samples))
 x_vals = linspace(-0.2, 2.5, 300)
@@ -177,13 +166,13 @@ plt.xlabel('x')
 plt.ylabel('Плотность')
 plt.legend()
 plt.grid(True, alpha=0.3)
-plt.xlim(-0.3, 2.6)  # Ограничим ось x для лучшего вида
+plt.xlim(-0.3, 2.6)  
 plt.savefig('plot_histogram.png', dpi=300, bbox_inches='tight',
             facecolor='white', edgecolor='none')
 plt.close()
 print("Сохранен файл: plot_histogram.png")
 
-# 5. Сводный график с точками без фона
+# 5. Сводный график
 fig = plt.figure(figsize=(16, 12))
 
 # 5.1 График плотности вероятности с облаком точек
@@ -203,7 +192,7 @@ ax1.scatter(scatter_x, scatter_y, color='darkblue', s=0.3, alpha=0.2,
 ax1.axvline(x=1.0, color='gray', linestyle='--', alpha=0.7, label='x=1')
 ax1.axvline(x=2.5, color='gray', linestyle='--', alpha=0.7, label='x=2.5')
 ax1.axhline(y=0, color='black', linewidth=0.5)
-ax1.set_title('Плотность вероятности с облаком точек')
+ax1.set_title('Плотность вероятности')
 ax1.set_xlabel('x')
 ax1.set_ylabel('f(x)')
 ax1.legend(fontsize=8, loc='upper right')
@@ -245,7 +234,7 @@ ax3.set_ylabel('x = F^{-1}(y)')
 ax3.legend(fontsize=8)
 ax3.grid(True, alpha=0.3)
 
-# 5.4 Гистограмма выборки (ИСПРАВЛЕНО)
+# 5.4 Гистограмма выборки 
 ax4 = plt.subplot(2, 2, 4)
 ax4.hist(samples, bins=80, density=True, alpha=0.7, color='skyblue', 
          edgecolor='black', linewidth=0.5, label='Выборка')
@@ -282,7 +271,6 @@ def min_val(arr):
 def max_val(arr):
     return max(arr)
 
-# Вывод информации в консоль
 print("\n" + "="*60)
 print("РЕЗУЛЬТАТЫ РАСЧЕТОВ")
 print("="*60)
@@ -314,7 +302,7 @@ print(f"Участок 2 (1.0 < x ≤ 2.5): {count_2} значений ({count_2
 print(f"Теоретическое F(1) = {F1*100:.1f}%")
 
 print("\nВсе графики сохранены в текущую директорию:")
-print("  - plot_pdf_with_cloud.png (плотность + облако точек)")
+print("  - plot_pdf_with_cloud.png (плотность)")
 print("  - plot_cdf_with_empirical.png (CDF + эмпирическая CDF)")
 print("  - plot_inv.png (обратная функция)")
 print("  - plot_histogram.png (гистограмма)")
